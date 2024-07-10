@@ -1,0 +1,8 @@
+python-dotenv
+anthropic
+flask
+requests
+tavily-python
+Pillow
+anthropic
+rich

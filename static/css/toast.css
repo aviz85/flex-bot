@@ -1,0 +1,33 @@
+.toast {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1050;
+    opacity: 0.9;
+}
+
+.bg-error {
+    background-color: #d9534f;
+    color: #fff;
+}
+
+.bg-success {
+    background-color: #5cb85c;
+    color: #fff;
+}
+
+.bg-info {
+    background-color: #5bc0de;
+    color: #fff;
+}
+
+.bg-warning {
+    background-color: #f0ad4e;
+    color: #fff;
+}
+
+.toast-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

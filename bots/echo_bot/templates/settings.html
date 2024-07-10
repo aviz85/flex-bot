@@ -1,0 +1,27 @@
+<form id="echoBotsettingsForm">
+    <div class="mb-3">
+        <label for="echo_prefix" class="form-label">Echo Prefix</label>
+        <input type="text" class="form-control" id="echo_prefix" name="echo_prefix">
+    </div>
+    <button type="submit" class="btn btn-primary">Save Settings</button>
+</form>
+
+<script>
+document.getElementById('echoBotsettingsForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    const settings = Object.fromEntries(formData.entries());
+    
+    const response = await fetch(`/update_bot_settings/${currentBotId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(settings)
+    });
+    
+    if (response.ok) {
+        alert('Settings updated successfully');
+    } else {
+        alert('Failed to update settings');
+    }
+});
+</script>
