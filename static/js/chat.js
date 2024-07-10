@@ -1,11 +1,7 @@
+let isSending = false;
 
-async function startChatWithBot(botId) {
-    currentChatbotId = botId;
-    await showPage('chat');
-    document.getElementById('chatbot-select').value = botId;
-    updateChatbotName(botId);
-    await createNewThread(botId);
-}
+// Initialize markdown-it
+const md = window.markdownit();
 
 async function createNewThread(botId) {
     try {
@@ -27,9 +23,17 @@ async function createNewThread(botId) {
 }
 
 async function sendMessage() {
+    if (isSending) return;
+
     const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-message');
     const message = userInput.value.trim();
+
     if (message && currentChatbotId && currentThreadId) {
+        isSending = true;
+        sendButton.disabled = true;
+        userInput.disabled = true;
+
         addMessageToChat('user', message);
         userInput.value = '';
 
@@ -42,14 +46,28 @@ async function sendMessage() {
                 body: JSON.stringify({
                     chatbot_id: currentChatbotId,
                     thread_id: currentThreadId,
-                    content: message
+                    content: message,
+                    role: 'user'
                 }),
             });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const data = await response.json();
-            addMessageToChat('bot', data.content[0].text.value);
+            if (data.content && data.content[0] && data.content[0].text) {
+                addMessageToChat('bot', data.content[0].text.value);
+            } else {
+                console.error('Unexpected response format:', data);
+                showToast('Received an unexpected response format from the server.', 'error');
+            }
         } catch (error) {
             console.error('Error sending message:', error);
             showToast('Error sending message. Please try again.', 'error');
+        } finally {
+            isSending = false;
+            sendButton.disabled = false;
+            userInput.disabled = false;
+            userInput.focus();
         }
     }
 }
@@ -58,7 +76,7 @@ function addMessageToChat(sender, message) {
     const chatMessages = document.getElementById('chat-messages');
     const messageElement = document.createElement('div');
     messageElement.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
-    messageElement.textContent = message;
+    messageElement.innerHTML = md.render(message);
     chatMessages.appendChild(messageElement);
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
@@ -87,98 +105,57 @@ function updateChatbotName(botId) {
     }
 }
 
-// Initialize markdown-it
-const md = window.markdownit();
-
-let sendingMessage = false;
-
-function addMessageToChat(sender, message) {
-    const chatMessages = document.getElementById('chat-messages');
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message', sender === 'user' ? 'user-message' : 'bot-message');
-    
-    // Parse markdown and set innerHTML
-    messageElement.innerHTML = md.render(message);
-    
-    chatMessages.appendChild(messageElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-}
-
-function showLoadingMessage() {
-    const chatMessages = document.getElementById('chat-messages');
-    const loadingElement = document.createElement('div');
-    loadingElement.classList.add('loading');
-    loadingElement.innerHTML = '<span>.</span><span>.</span><span>.</span>';
-    chatMessages.appendChild(loadingElement);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    return loadingElement;
-}
-
-async function sendMessage() {
-    if (sendingMessage) return;
-
-    const userInput = document.getElementById('user-input');
-    const message = userInput.value.trim();
-    if (message === '') return;
-
-    addMessageToChat('user', message);
-    userInput.value = '';
-
-    sendingMessage = true;
-    const loadingElement = showLoadingMessage();
-
-    try {
-        const response = await fetch('/chat', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ message: message })
-        });
-
-        const data = await response.json();
-        loadingElement.remove();
-        
-        if (data && data.response) {
-            addMessageToChat('bot', data.response);
-        } else {
-            addMessageToChat('bot', 'Sorry, something went wrong.');
-        }
-    } catch (error) {
-        console.error('Error:', error);
-        loadingElement.remove();
-        addMessageToChat('bot', 'Sorry, something went wrong.');
-    } finally {
-        sendingMessage = false;
-    }
-}
-
 function clearChat() {
     const chatMessages = document.getElementById('chat-messages');
     chatMessages.innerHTML = '';
     
-    // Clear chat history on the server
-    fetch('/reset', {
-        method: 'POST'
+    fetch('/chat/create_thread', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chatbot_id: currentChatbotId }),
     })
-    .then(response => {
-        if (response.ok) {
-            console.log('Chat history cleared');
+    .then(response => response.json())
+    .then(data => {
+        if (data.thread_id) {
+            currentThreadId = data.thread_id;
+            console.log('New chat thread created');
+            showToast('Chat cleared and new thread created', 'success');
         } else {
-            console.error('Failed to clear chat history');
+            console.error('Failed to create new chat thread');
+            showToast('Failed to clear chat. Please try again.', 'error');
         }
     })
     .catch(error => {
         console.error('Error:', error);
+        showToast('Error clearing chat. Please try again.', 'error');
     });
 }
 
+function showToast(message, type) {
+    // Implementation depends on your specific setup
+    // This is a placeholder function
+    console.log(`Toast: ${message} (${type})`);
+    // You might want to add code here to actually show a toast notification
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('send-message').addEventListener('click', sendMessage);
-    document.getElementById('clear-chat').addEventListener('click', clearChat);
-    document.getElementById('user-input').addEventListener('keypress', function(event) {
-        if (event.key === 'Enter') {
+    const sendButton = document.getElementById('send-message');
+    const userInput = document.getElementById('user-input');
+    const clearChatButton = document.getElementById('clear-chat');
+
+    sendButton.addEventListener('click', sendMessage);
+    clearChatButton.addEventListener('click', clearChat);
+    
+    userInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter' && !event.shiftKey && !isSending) {
+            event.preventDefault();
             sendMessage();
         }
+    });
+
+    userInput.addEventListener('input', function() {
+        sendButton.disabled = this.value.trim() === '' || isSending;
     });
 });

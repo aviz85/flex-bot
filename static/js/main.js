@@ -12,6 +12,63 @@ document.addEventListener('DOMContentLoaded', () => {
     addEventListeners();
 });
 
+async function startChatWithBot(botId) {
+    try {
+        // Set the current chatbot ID
+        currentChatbotId = botId;
+
+        // Update the UI to reflect the selected chatbot
+        document.getElementById('chatbot-select').value = botId;
+        updateChatbotName(botId);
+        await showPage('chat');
+
+        // Clear the chat messages area
+        const chatMessages = document.getElementById('chat-messages');
+        chatMessages.innerHTML = '';
+
+        // Disable the chat input and send button while initializing
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-message');
+        userInput.disabled = true;
+        sendButton.disabled = true;
+
+        // Show a loading message or spinner
+        showToast('Initializing chat...', 'info');
+
+        // Create a new thread for this chat session
+        await createNewThread(botId);
+
+        // Enable the chat input and send button
+        userInput.disabled = false;
+        sendButton.disabled = false;
+
+        // Focus on the chat input
+        userInput.focus();
+
+        // Show a welcome message or instructions
+        const welcomeMessage = `Chat started with ${getBotName(botId)}. Type your message and press Enter to send.`;
+        addMessageToChat('system', welcomeMessage);
+
+        // Optionally, you could fetch and display any initial messages or prompts from the server here
+
+        showToast('Chat session initialized successfully!', 'success');
+    } catch (error) {
+        console.error('Error starting chat with bot:', error);
+        showToast('Failed to start chat session. Please try again.', 'error');
+
+        // Reset the UI in case of error
+        currentChatbotId = null;
+        document.getElementById('chatbot-select').value = '';
+        updateChatbotName(null);
+    }
+}
+
+// Helper function to get bot name (implement this based on your data structure)
+function getBotName(botId) {
+    const bot = bots.find(b => b.id === botId);
+    return bot ? bot.name : 'Unknown Bot';
+}
+
 function addEventListeners() {
     document.getElementById('createBotBtn').addEventListener('click', createBot);
     document.getElementById('send-message').addEventListener('click', sendMessage);

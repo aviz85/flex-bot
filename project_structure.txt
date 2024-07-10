@@ -1,0 +1,99 @@
+.
+├── README.md
+├── __init__.py
+├── __pycache__
+│   ├── __init__.cpython-39.pyc
+│   ├── config.cpython-39.pyc
+│   ├── extensions.cpython-39.pyc
+│   ├── models.cpython-39.pyc
+│   ├── storage.cpython-39.pyc
+│   └── storage_module.cpython-39.pyc
+├── app.log
+├── app.py
+├── bots
+│   ├── claude
+│   │   ├── __pycache__
+│   │   │   └── chatbot.cpython-39.pyc
+│   │   ├── anthropic_chatbot.py
+│   │   ├── anthropic_gateway.py
+│   │   ├── chatbot.py
+│   │   └── static
+│   │       ├── 0_2.jpg
+│   │       └── thumbnail.png
+│   ├── echo_bot
+│   │   ├── __pycache__
+│   │   │   └── chatbot.cpython-39.pyc
+│   │   ├── chatbot.py
+│   │   ├── static
+│   │   │   ├── 0_1.jpg
+│   │   │   └── thumbnail.png
+│   │   └── templates
+│   │       └── settings.html
+│   ├── reverse_bot
+│   │   ├── __pycache__
+│   │   │   └── chatbot.cpython-39.pyc
+│   │   ├── chatbot.py
+│   │   └── static
+│   │       └── thumbnail.png
+│   └── uppercase_bot
+│       ├── __pycache__
+│       │   └── chatbot.cpython-39.pyc
+│       ├── chatbot.py
+│       └── static
+│           ├── 0_1.jpg
+│           └── thumbnail.png
+├── config.py
+├── data
+│   ├── chatbots.json
+│   ├── messages.json
+│   └── threads.json
+├── engineer.py
+├── models
+│   ├── __init__.py
+│   ├── __pycache__
+│   │   ├── __init__.cpython-39.pyc
+│   │   ├── base_chatbot.cpython-39.pyc
+│   │   ├── chatbot.cpython-39.pyc
+│   │   ├── content_item.cpython-39.pyc
+│   │   ├── message.cpython-39.pyc
+│   │   ├── text_content.cpython-39.pyc
+│   │   └── thread.cpython-39.pyc
+│   ├── base_chatbot.py
+│   ├── chatbot.py
+│   ├── content_item.py
+│   ├── message.py
+│   ├── text_content.py
+│   └── thread.py
+├── project_structure.txt
+├── requirements.txt
+├── routes
+│   ├── __pycache__
+│   │   ├── bot_routes.cpython-39.pyc
+│   │   ├── chat_routes.cpython-39.pyc
+│   │   └── main_routes.cpython-39.pyc
+│   ├── bot_routes.py
+│   ├── chat_routes.py
+│   └── main_routes.py
+├── setup.py
+├── static
+│   ├── css
+│   │   ├── chat.css
+│   │   ├── main.css
+│   │   └── toast.css
+│   ├── images
+│   │   └── echo_bot
+│   └── js
+│       ├── bots.js
+│       ├── chat-logs.js
+│       ├── chat.js
+│       ├── chat_old.js
+│       ├── main.js
+│       ├── navigation.js
+│       ├── settings.js
+│       └── utils.js
+├── storage_module.py
+├── templates
+│   └── index.html
+└── test_bots.py
+
+27 directories, 70 files

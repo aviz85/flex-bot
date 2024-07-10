@@ -1,3 +1,5 @@
+#storage_module.py
+
 import os
 import uuid
 import json
@@ -151,13 +153,14 @@ class Storage:
             metadata=metadata or {}
         )
         self.data['messages'][message.id] = message.to_dict()
-    
+
         thread_data = self.data['threads'].get(thread_id)
         if thread_data:
             thread = Thread.from_dict(thread_data)
             thread.add_message(message)
             self.data['threads'][thread_id] = thread.to_dict()
         else:
+            # If the thread doesn't exist, create a new one
             thread = Thread(
                 id=thread_id,
                 created_at=int(time.time()),
@@ -167,7 +170,6 @@ class Storage:
             )
             self.data['threads'][thread_id] = thread.to_dict()
 
-        print(thread)
         self.save('threads')
         self.save('messages')
         logger.debug(f"Created message: {message}")

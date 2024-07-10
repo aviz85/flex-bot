@@ -39,41 +39,11 @@ def send_message():
         module = importlib.import_module(f"bots.{chatbot.chatbot_type_id}.chatbot")
         ChatBotClass = getattr(module, 'ChatBot')
         bot_instance = ChatBotClass(chatbot.id)
-        
         response_message = bot_instance.get_chat_response(user_message, thread)
         return jsonify(response_message.to_dict())
     except Exception as e:
         return jsonify({'error': str(e)}), 400
-
-@chat_bp.route('/chat', methods=['POST'])
-def chat():
-    chatbot_id = request.json.get('chatbot_id')
-    thread_id = request.json.get('thread_id')
-    content = request.json.get('content')
-    
-    try:
-        chatbot = current_app.storage.get_chatbot(chatbot_id, format='object')
-        if not chatbot:
-            return jsonify({'error': 'Invalid chatbot ID'}), 400
-        thread = current_app.storage.get_thread(thread_id, format='object')
-        if not thread:
-            return jsonify({'error': 'Invalid thread ID'}), 400
-        user_message = current_app.storage.create_message(
-            thread_id=thread_id,
-            role="user",
-            content=content
-        )
         
-        module = importlib.import_module(f"bots.{chatbot.chatbot_type_id}.chatbot")
-        ChatBotClass = getattr(module, 'ChatBot')
-        bot_instance = ChatBotClass(chatbot.id)
-        
-        response_message = bot_instance.get_chat_response(user_message, thread)
-        
-        return jsonify(response_message.to_dict())
-    except Exception as e:
-        return jsonify({'error': str(e)}), 400
-
 @chat_bp.route('/get_thread', methods=['GET'])
 def get_thread():
     thread_id = request.args.get('thread_id')
