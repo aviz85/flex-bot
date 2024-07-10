@@ -1,7 +1,4 @@
-// Chat Logs related functions
-
-let allThreads = [];
-
+// Make loadChatLogs function global
 async function loadChatLogs() {
     console.log("loadChatLogs called");
     await loadBotLibrary();  // Load bots using the existing function
@@ -30,10 +27,24 @@ async function fetchThreads() {
     }
 }
 
+async function loadBotLibrary() {
+    try {
+        const response = await fetch('/bot/get_bots');
+        if (!response.ok) {
+            throw new Error('Failed to fetch bots');
+        }
+        bots = await response.json();
+        console.log("Fetched bots:", bots);
+    } catch (error) {
+        console.error('Error fetching bots:', error);
+        showToast('Error fetching bot library. Please try again.', 'error');
+    }
+}
+
 function populateBotFilter() {
     const botFilter = document.getElementById('botFilter');
     botFilter.innerHTML = '<option value="">All Bots</option>';
-    bots.forEach(bot => {
+    Object.values(bots).forEach(bot => {
         const option = document.createElement('option');
         option.value = bot.id;
         option.textContent = bot.name;
@@ -49,15 +60,36 @@ function displayThreads() {
     threadsList.innerHTML = '';  // Clear existing threads
 
     const filteredThreads = selectedBotId 
-        ? allThreads.filter(thread => thread.chatbot_id === selectedBotId)
+        ? Object.fromEntries(Object.entries(allThreads).filter(([_, thread]) => thread.chatbot_id === selectedBotId))
         : allThreads;
 
-    filteredThreads.forEach(thread => {
-        const threadElement = createThreadElement(thread);
-        threadsList.appendChild(threadElement);
+    // Group threads by chatbot
+    const threadsByBot = {};
+    Object.values(filteredThreads).forEach(thread => {
+        if (!threadsByBot[thread.chatbot_id]) {
+            threadsByBot[thread.chatbot_id] = [];
+        }
+        threadsByBot[thread.chatbot_id].push(thread);
     });
 
-    if (filteredThreads.length === 0) {
+    // Display threads grouped by bot
+    Object.entries(threadsByBot).forEach(([botId, botThreads]) => {
+        const bot = bots[botId];
+        const botName = bot ? bot.name : 'Unknown Bot';
+
+        const botSection = document.createElement('div');
+        botSection.className = 'bot-section mb-4';
+        botSection.innerHTML = `<h3>${botName}</h3>`;
+
+        botThreads.forEach(thread => {
+            const threadElement = createThreadElement(thread);
+            botSection.appendChild(threadElement);
+        });
+
+        threadsList.appendChild(botSection);
+    });
+
+    if (Object.keys(threadsByBot).length === 0) {
         threadsList.innerHTML = '<p>No chat logs found.</p>';
     }
 }
@@ -66,14 +98,14 @@ function createThreadElement(thread) {
     const threadElement = document.createElement('div');
     threadElement.className = 'card mb-3';
     
-    const bot = bots.find(b => b.id === thread.chatbot_id);
+    const bot = bots[thread.chatbot_id];
     const botName = bot ? bot.name : 'Unknown Bot';
 
     threadElement.innerHTML = `
         <div class="card-header">
             <h5 class="mb-0">
                 <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#thread-${thread.id}">
-                    ${botName} - ${new Date(thread.created_at * 1000).toLocaleString()}
+                    Thread ${thread.id} - ${new Date(thread.created_at * 1000).toLocaleString()}
                 </button>
             </h5>
         </div>
@@ -124,7 +156,7 @@ document.addEventListener('DOMContentLoaded', () => {
         mutations.forEach((mutation) => {
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 if (!chatLogsPage.classList.contains('hidden')) {
-                    loadChatLogs();
+                    window.loadChatLogs();
                 }
             }
         });

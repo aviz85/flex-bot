@@ -1,3 +1,5 @@
+// chat.js
+
 let isSending = false;
 
 // Initialize markdown-it
@@ -134,10 +136,28 @@ function clearChat() {
 }
 
 function showToast(message, type) {
-    // Implementation depends on your specific setup
-    // This is a placeholder function
-    console.log(`Toast: ${message} (${type})`);
-    // You might want to add code here to actually show a toast notification
+    const toast = document.createElement('div');
+    toast.classList.add('toast', `toast-${type}`);
+    toast.textContent = message;
+
+    const toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    document.getElementById('toast-container').appendChild(toast);
+
+    setTimeout(() => {
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => {
+                toast.remove();
+            }, 300);
+        }, 3000);
+    }, 100);
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -158,4 +178,9 @@ document.addEventListener('DOMContentLoaded', function() {
     userInput.addEventListener('input', function() {
         sendButton.disabled = this.value.trim() === '' || isSending;
     });
+
+    // Initialize the toast container
+    const toastContainer = document.createElement('div');
+    toastContainer.id = 'toast-container';
+    document.body.appendChild(toastContainer);
 });

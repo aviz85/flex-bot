@@ -19,7 +19,7 @@ async function showPage(page) {
         if (page === 'bots-library') loadBots();
         if (page === 'chat-logs'){
              console.log("Loading chat logs...");
-             loadChatLogs();
+             window.loadChatLogs();
         }
         if (page === 'settings') loadBotSettings();
         if (page === 'chat') loadChatbots();
